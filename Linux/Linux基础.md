@@ -264,7 +264,7 @@ ctrl - 减小字体
 | 输入模式 | 可自由编辑                                   |
 | 底线模式 | 以 ：开始，用于文件的保存和退出              |
 
-![image-20250227155537040](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux常用命令.assets\image-20250227155537040.png)
+![image-20250227155537040](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux\Linux常用命令.assets\image-20250227155537040.png)
 
 
 
@@ -440,7 +440,7 @@ sudo命令可以为普通的命令授权（5mins），临时使用root用户执�
 | 写   | w（write）  | 2        |
 | 执行 | x（excute） | 1        |
 
-![image-20250303182523687](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux常用命令.assets\image-20250303182523687.png)
+![image-20250303182523687](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux\Linux常用命令.assets\image-20250303182523687.png)
 
 文件（或目录）；拥有者，组，其他用户的权限；硬链接数（表示访问该文件或目录的方式数量）；然后是拥有者，组名称；文件（目录）大小；创建时间；名称。
 
@@ -532,7 +532,7 @@ chmod +/-/= rwx 文件名/目录名
 
 
 
-![image-20250303205515618](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux常用命令.assets\image-20250303205515618.png)
+![image-20250303205515618](C:\dataD\SCUStudy\Interesting-small-Knowledge\Linux\Linux常用命令.assets\image-20250303205515618.png)
 
 
 
