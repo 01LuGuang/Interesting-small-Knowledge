@@ -596,6 +596,8 @@ chmod +/-/= rwx 文件名/目录名
 
 
 
+强度来了（这部分知识基本是学OS的时候涉及，如果你是CS专业，当然不影响**卷王**读者自行学习:smile:）
+
 
 
 # Linux进程
@@ -684,3 +686,85 @@ int getpgid(int pid); 	//将当前进程的进程组标识符改为当前进程�
 - 进程一旦调用了wait()，就立即阻塞自己，由wait()自动分析是否当前进程的某个子进程已经退出，如果让它找到了这样一个已经变成僵尸态的子进程，wait ()就会收集这个子进程的信息，并把它彻底销毁后返回；如果没有找到这样一个子进程，wait ()就会一直阻塞在这里，直到有一个出现为止。
 - **wait()要与fork()配套出现**，如果在使用fork()之前调用wait()，wait()的返回值则为-1，正常情况下wait()的返回值为子进程的PID
 - 当**父进程没有使用wait()函数等待已终止的子进程**时,子进程就会进入一种无父进程清理自己尸体的状态，此时的子进程就是僵尸进程，不能在内核中清理尸体的情况
+
+
+
+## 加载新的进程映像——exec函数族
+
+- 创建的进程往往希望它能执行新的程序，在Linux中，进程创建和加载新进程映像是分离操作的。
+- 在Linux中，当创建一个进程后，通常使用exec系列函数将子进程替换成新的进程映像。
+- 注意：Linux中并不存在一个exec()的函数形式，exec指的是一组函数，一共有6个，分别是：
+
+```c
+#include <unistd.h> 
+int execl(const char *path, const char *arg, ...); 
+int execlp(const char *file, const char *arg, ...); 
+int execle(const char *path, const char *arg, ..., char *const envp[]); 
+int execv(const char *path, char *const argv[]); 
+int execvp(const char *file, char *const argv[]); 
+int execve(const char *path, char *const argv[], char *const envp[]);
+其中，只有execve()是真正意义上的系统调用，其它都是在此基础上经过包装的库函数
+```
+
+
+
+- exec函数族的作用是**根据指定的文件名找到可执行文件，并用它来取代调用进程的内容**，换句话说，就是在调用进程内部执行一个可执行文件。这里的可执行文件既可以是二进制文件，也可以是任何Linux下可执行的脚本文件。
+- 与一般情况不同，**exec函数族的函数执行成功后不会返回，因为调用进程的实体，包括代码段，数据段和堆栈等都已经被新的内容取代**，只留下进程ID等一些表面上的信息仍保持原样。
+
+
+
+:sunny::sunny::sunny:如果你需要一些练习，这里提供了少量的题目：
+
+（1）编写一个C 程序，并使用系统调用fork()创建一个子进程。要求如下：①在子进程中分别输出当前进程为子进程的提示、当前进程的PID 和父进程的PID、根据用户输入确定当前进程的返回值、退出提示等信息。②在父进程中分别输出当前进程为父进程的提示、当前进程的PID 和子进程的PID、等待子进程退出后获得的返回值、退出提示等信息。
+
+```c
+#include <unistd.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+    pid_t childpid;
+    int retval;
+    int status;
+
+    childpid = fork(); // 子进程从这里开始执行，复制了父进程的所有状态，包括变量
+
+    if (childpid >= 0) {
+        if (childpid == 0) {
+            // 子进程逻辑
+            printf("CHILD: I am the child process!\n");
+            printf("CHILD: Here's my PID: %d\n", getpid());         // 获取子进程 PID
+            printf("CHILD: My parent's PID is: %d\n", getppid());    // 获取父进程 PID
+            printf("CHILD: The value of fork return is: %d\n", childpid);
+            printf("CHILD: Sleep for 1 second...\n");
+            sleep(1);
+            printf("CHILD: Enter an exit value (0~255): ");
+            scanf("%d", &retval);
+            printf("CHILD: Goodbye!\n");
+            exit(retval);  // 子进程返回用户指定的退出码
+        } else {
+            // 父进程逻辑
+            printf("Parent: I am the parent process!\n");
+            printf("Parent: Here's my PID: %d\n", getpid());         // 获取父进程 PID
+            printf("Parent: The value of my child's PID is: %d\n", childpid);
+            printf("Parent: I will now wait for my child to exit.\n");
+
+            wait(&status);  // 等待子进程结束，并获取退出状态
+
+            printf("Parent: Child's exit code is: %d\n", WEXITSTATUS(status));
+            printf("Parent: Goodbye!\n");
+            exit(0);
+        }
+    } else {
+        // fork失败
+        perror("fork error!");
+        exit(1);
+    }
+}
+
+```
+
+（2）编写另一个C 程序，使用系统调用fork()以创建一个子进程，并使用这个子进程调用exec 函数族以执行系统命令ls。
